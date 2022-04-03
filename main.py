@@ -5,6 +5,7 @@ import os
 import sys
 from nltk.corpus import words
 allWords = words.words()
+import msvcrt
 
 def deleteLastLine():
     "Use this function to delete the last line in the STDOUT"
@@ -17,7 +18,7 @@ def deleteLastLine():
 
 
 # generate random words from vowels and consonants alternating
-def generateRandomWord(minLength, maxLength, vowels, consonants, punctuations, newKey=None):
+def generateRandomWord(minLength, maxLength, vowels, consonants, punctuations, newKey=None, allowCapitalization=False):
     # generate random length of word
     length = np.random.randint(minLength, maxLength+1)
     
@@ -59,14 +60,27 @@ def generateRandomWord(minLength, maxLength, vowels, consonants, punctuations, n
         word = word + np.random.choice(punctuations)
 
 
-    if np.random.rand() < 0.2:
+    if allowCapitalization and np.random.rand() < 0.2:
         word = word.capitalize()
         
     return word
 
+def generateRealRandomWord(minLength, maxLength, vowels, consonants, punctuations, newKey=None, allowCapitalization=False):
+
+    searching = True
+    while searching:
+        # input()
+        testWord = np.random.choice(allWords)
+
+        # check 
+        if minLength <= len(testWord) <= maxLength and not any(
+            char not in vowels and char not in consonants for char in testWord
+        ):
+            return testWord
 
 
-def generateRandomSentence(length, keys, newKey=None):
+
+def generateRandomSentence(length, keys, newKey=None, allowCapitalization=False, realWords=False):
     # generate random length of sentence
 
     vowels = []
@@ -83,10 +97,21 @@ def generateRandomSentence(length, keys, newKey=None):
             consonants.append(key.key)
 
     return ' '.join(
-        generateRandomWord(3, 6, vowels, consonants, punctuations, newKey)
+        generateRealRandomWord(3, 7, vowels, consonants, punctuations, newKey, allowCapitalization=allowCapitalization) if realWords else generateRandomWord(3, 6, vowels, consonants, punctuations, newKey, allowCapitalization=allowCapitalization)
         for _ in range(length)
     )
 
+
+@np.vectorize
+def pressKey(key):
+    print(f"Press {key}")
+
+    while True:
+        inKey = msvcrt.getch().decode()
+        if inKey == key:
+            return True
+
+        print("Wrong key!")
 
 class key:
     def __init__(self, key: str, isVowel: bool, isPunctuation=False, isCapital=False):
@@ -132,17 +157,28 @@ def main():
     newKey = None
 
     # parameters
-    charsPerS = 3.  # characters per second
-    wordsPerTest = 15  # words per test
+    charsPerS = 2.  # characters per second
+    wordsPerTest = 5  # words per test
     allowedErrorRate = 0.2  # allowed errors per word
+    allowCapitalization = False  # allow capitalization
+
+    # pressKey([key.key for key in myKeys])
+
 
 
     for i in range(100):
 
-        test = generateRandomSentence(wordsPerTest, myKeys, newKey)
+
+        if len(myKeys) > 12:
+            test = generateRandomSentence(wordsPerTest, myKeys, newKey, allowCapitalization=allowCapitalization, realWords=True)
+        else:
+            test = generateRandomSentence(wordsPerTest, myKeys, newKey, allowCapitalization=allowCapitalization)
+
+
 
         startTest = input(f"\n\n Run {i}: Press enter to start test")
-        deleteLastLine
+        deleteLastLine()
+
 
         print(test)
         t0 = time.time()
@@ -162,7 +198,7 @@ def main():
 
             newKey = myKeys[-1]
             print(f"Added key: {newKey.key}")
-
+            pressKey(newKey.key)
 
         elif test == typed and t1 > len(test)/charsPerS and errors <= allowedErrorRate*wordsPerTest:
             print(f"Correct but too slow!\nTime: {t1}s\nErrors: {errors}\nChars per s: {len(test)/t1:.2f}")
@@ -171,11 +207,13 @@ def main():
             print(f"Too many errors!\nTime: {t1}s\nErrors: {errors}\nChars per s: {len(test)/t1:.2f}")
 
 if __name__ == '__main__':
+
+    # print(np.random.choice(allWords))
+
     main()
 
 
 # TODO
-# - adjust setting for capitalization
 # - make real words more likely
 # - add performance measure
 # - add database
