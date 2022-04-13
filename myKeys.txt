@@ -1,0 +1,11 @@
+a True False False 0.0
+s False False False 0.0
+d False False False 0.0
+f False False False 0.0
+j False False False 0.0
+k False False False 0.0
+l False False False 0.0
+u True False False 0.0
+r False False False 0.0
+i False False False 0
+e False False False 0

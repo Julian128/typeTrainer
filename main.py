@@ -3,9 +3,12 @@ import time
 import difflib
 import os
 import sys
-from nltk.corpus import words
-allWords = words.words()
-import msvcrt
+# from nltk.corpus import words
+# allWords = words.words()
+# import msvcrt
+import os.path
+
+file_exists = os.path.exists('./myKeys.txt')
 
 def deleteLastLine():
     "Use this function to delete the last line in the STDOUT"
@@ -107,25 +110,26 @@ def pressKey(key):
     print(f"Press {key}")
 
     while True:
-        inKey = msvcrt.getch().decode()
-        if inKey == key:
-            return True
+        # inKey = msvcrt.getch().decode()
+        # if inKey == key:
+        return True
 
-        print("Wrong key!")
+        # print("Wrong key!")
 
 class key:
-    def __init__(self, key: str, isVowel: bool, isPunctuation=False, isCapital=False):
+    def __init__(self, key: str, isVowel: bool, isPunctuation=False, isCapital=False, performance=0):
         self.key = key
         self.isVowel = isVowel
         self.isConsonant = not isVowel
         self.isPunctuation = isPunctuation
         self.isCapital = isCapital
-        self.performance = 0
+        self.performance = performance
 
 
     # add function to print all attributes of object
     def __str__(self):
-        return f"{self.key=} {self.isVowel=} {self.isConsonant=} {self.isCapital=} {self.isPunctuation=} {self.performance=}"
+        return f"{self.key} {self.isVowel} {self.isPunctuation} {self.isCapital} {self.performance}"
+        # return f"{self.key=} {self.isVowel=} {self.isConsonant=} {self.isCapital=} {self.isPunctuation=} {self.performance=}"
 
 
 def main():
@@ -153,6 +157,7 @@ def main():
             "urieowztpqhgnbmkv,c.x-y", "10001000100000100000100000", "00000000000000000000101010")
     ])
 
+    # toAddKeys = allKeys - myKeys
 
     newKey = None
 
@@ -164,9 +169,22 @@ def main():
 
     # pressKey([key.key for key in myKeys])
 
+    # load myKeys array from file
+    if file_exists:
+        mk = np.genfromtxt("myKeys.txt", delimiter=" ", unpack=True, dtype=str)
+        myKeys = np.array([key(letter, isVowel == "True", isPunctuation == "True", isCapital == "True", float(performance)) for letter, isVowel, isPunctuation, isCapital, performance in zip(mk[0], mk[1], mk[2], mk[3], mk[4])])
+
+
+    toAddKeys = np.delete(toAddKeys, np.arange(len(myKeys)-7))
+
+    print(toAddKeys[0])
 
 
     for i in range(100):
+
+
+
+
 
 
         if len(myKeys) > 12:
@@ -182,6 +200,7 @@ def main():
 
         print(test)
         t0 = time.time()
+
 
         typed = input()
         t1 = round(time.time() - t0, 2)
@@ -205,6 +224,11 @@ def main():
 
         else:
             print(f"Too many errors!\nTime: {t1}s\nErrors: {errors}\nChars per s: {len(test)/t1:.2f}")
+
+
+        # save myKeys array in file
+        np.savetxt("myKeys.txt", myKeys, fmt="%s")
+        print(f"{len(myKeys)}")
 
 if __name__ == '__main__':
 
